@@ -11,8 +11,10 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_bloc: 8.1.6
+  flutter_debouncer: ^2.0.0
   json_annotation: 4.9.0
   json_serializable: 6.8.0
+  scrollview_observer: ^1.21.0
 
 dev_dependencies:
   build_runner: 2.3.3
