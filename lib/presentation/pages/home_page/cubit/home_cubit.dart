@@ -27,6 +27,9 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   Future<void> findItemById(String id) async {
+    if (id.isEmpty) {
+      return;
+    }
     if (state case HomeLoadedState data) {
       int index = 0;
 
@@ -46,21 +49,21 @@ class HomeCubit extends Cubit<HomeState> {
 
         if (state is HomeErrorState) {
           return;
-        }
-
-        for (final Product product in _pages.last.products) {
-          if (product.id == id) {
-            emit(HomeFoundIdLoadedState(
-              foundIndex: index,
-              previousState: data,
-            ));
-            return;
+        } else if (state case HomeLoadedState data) {
+          for (final Product product in _pages.last.products) {
+            if (product.id == id) {
+              emit(HomeFoundIdLoadedState(
+                foundIndex: index,
+                previousState: data,
+              ));
+              return;
+            }
+            index++;
           }
-          index++;
         }
       }
 
-      if (state is HomeFoundIdLoadedState) {
+      if (state case HomeFoundIdLoadedState data) {
         emit(HomeLoadedState(
           currentFilters: data.currentFilters,
           initFilters: data.initFilters,
@@ -160,13 +163,11 @@ class HomeCubit extends Cubit<HomeState> {
             continue;
           }
 
-          if (newFilters.minRegularPrice != null &&
-              newFilters.minRegularPrice! > product.offer.regularPrice.amount) {
+          if (newFilters.minRegularPrice != null && newFilters.minRegularPrice! > product.offer.regularPrice.amount) {
             continue;
           }
 
-          if (newFilters.maxRegularPrice != null &&
-              newFilters.maxRegularPrice! < product.offer.regularPrice.amount) {
+          if (newFilters.maxRegularPrice != null && newFilters.maxRegularPrice! < product.offer.regularPrice.amount) {
             continue;
           }
 

@@ -68,6 +68,7 @@ class _Search extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      autofocus: true,
       decoration: const InputDecoration(prefixIcon: Icon(Icons.search)),
       onChanged: (value) => _debouncer.debounce(
         duration: _debounceDuration,
