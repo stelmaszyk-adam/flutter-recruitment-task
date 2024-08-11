@@ -37,8 +37,6 @@ void main() {
       productsRepository = MockProductsRepository();
 
       exception = Exception();
-
-      [testProductsFirstPage.products, testProductsSecondPage.products].expand((list) => list).toList();
     });
 
     setUp(() {
@@ -90,7 +88,7 @@ void main() {
     );
 
     blocTest<HomeCubit, HomeState>(
-      'success findItemById with id which belongs to first of the page',
+      'success findItemById - product id belongs to first page of the items',
       setUp: () {
         when(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1))).thenAnswer(
           (_) => Future.value(
@@ -114,6 +112,103 @@ void main() {
               .toList()
               .indexOf(testProductsFirstPage.products.first),
         ),
+      ],
+      verify: (_) {
+        verify(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1)));
+        verifyNoMoreInteractions(productsRepository);
+      },
+      tags: [
+        'logic',
+      ],
+    );
+
+    blocTest<HomeCubit, HomeState>(
+      'success findItemById - product id belongs to second page of the items',
+      setUp: () {
+        when(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1))).thenAnswer(
+          (_) => Future.value(
+            testProductsFirstPage,
+          ),
+        );
+
+        when(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 2))).thenAnswer(
+          (_) => Future.value(
+            testProductsSecondPage,
+          ),
+        );
+      },
+      build: () => homeCubit,
+      act: (cubit) async {
+        await cubit.getNextPage();
+        await cubit.findItemById(testProductsSecondPage.products.last.id);
+      },
+      expect: () => [
+        isA<HomeLoadedState>(),
+        isA<HomeLoadedState>(),
+        isA<HomeFoundIdLoadedState>(),
+      ],
+      verify: (_) {
+        verify(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1)));
+        verify(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 2)));
+        verifyNoMoreInteractions(productsRepository);
+      },
+      tags: [
+        'logic',
+      ],
+    );
+
+    blocTest<HomeCubit, HomeState>(
+      'success findItemById, but after it tries again and next id does not exist in the pages and cubit come back to HomeLoadedState state',
+      setUp: () {
+        const product = ProductsPage(
+          pageNumber: 1,
+          totalPages: 1,
+          pageSize: 1,
+          products: [
+            Product(
+              available: false,
+              id: '123',
+              name: '',
+              mainImage: '',
+              description: '',
+              isFavorite: null,
+              isBlurred: null,
+              sellerId: 'sellerId',
+              tags: [],
+              offer: Offer(
+                  skuId: '',
+                  sellerId: 'sellerId',
+                  normalizedPrice: null,
+                  subtitle: '',
+                  omnibusPrice: null,
+                  regularPrice: Price(amount: 10, currency: 'PLN'),
+                  isBest: null,
+                  isSponsored: null,
+                  promotionalPrice: null,
+                  sellerName: 'sellerName',
+                  promotionalNormalizedPrice: null,
+                  tags: [],
+                  omnibusLabel: ''),
+            )
+          ],
+        );
+
+        when(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1))).thenAnswer(
+          (_) => Future.value(
+            product,
+          ),
+        );
+      },
+      build: () => homeCubit,
+      act: (cubit) async {
+        await cubit.getNextPage();
+        await cubit.findItemById('123');
+        await cubit.findItemById('1');
+      },
+      expect: () => [
+        isA<HomeLoadedState>(),
+        isA<HomeFoundIdLoadedState>(),
+        isA<HomeLoadedState>(),
       ],
       verify: (_) {
         verify(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1)));
