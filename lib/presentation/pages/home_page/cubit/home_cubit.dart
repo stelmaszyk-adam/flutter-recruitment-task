@@ -103,14 +103,12 @@ class HomeCubit extends Cubit<HomeState> {
             tags.addAll(product.tags.map((tag) => tag.toEntity()).toSet());
             sellers.add(SellerEntity(id: product.sellerId, name: product.offer.sellerName));
 
-            if (product.offer.normalizedPrice?.amount != null &&
-                (minRegularPrice == noValue || minRegularPrice > product.offer.normalizedPrice!.amount)) {
-              minRegularPrice = product.offer.normalizedPrice!.amount;
+            if (minRegularPrice == noValue || minRegularPrice > product.offer.regularPrice.amount) {
+              minRegularPrice = product.offer.regularPrice.amount;
             }
 
-            if (product.offer.normalizedPrice?.amount != null &&
-                (maxRegularPrice == noValue || maxRegularPrice < product.offer.normalizedPrice!.amount)) {
-              maxRegularPrice = product.offer.normalizedPrice!.amount;
+            if (maxRegularPrice == noValue || maxRegularPrice < product.offer.regularPrice.amount) {
+              maxRegularPrice = product.offer.regularPrice.amount;
             }
           }
         }
@@ -135,8 +133,8 @@ class HomeCubit extends Cubit<HomeState> {
     }
   }
 
-  void setNewCurrentFilters(FiltersEntity? newCurrentFilters) {
-    if (newCurrentFilters == null) {
+  void setNewFilters(FiltersEntity? newFilters) {
+    if (newFilters == null) {
       return;
     }
 
@@ -145,30 +143,30 @@ class HomeCubit extends Cubit<HomeState> {
 
       final List<Product> newProducts = [];
 
-      Set<String> tagsId = newCurrentFilters.tags?.map((tag) => tag.tag).toSet() ?? {};
-      Set<String> sellersId = newCurrentFilters.sellers?.map((tag) => tag.id).toSet() ?? {};
+      Set<String> tagsId = newFilters.tags?.map((tag) => tag.tag).toSet() ?? {};
+      Set<String> sellersId = newFilters.sellers?.map((tag) => tag.id).toSet() ?? {};
 
       for (final pages in _pages) {
         for (final product in pages.products) {
-          if (newCurrentFilters.isAvailable != null && newCurrentFilters.isAvailable != product.available) {
+          if (newFilters.isAvailable != null && newFilters.isAvailable != product.available) {
             continue;
           }
 
-          if (newCurrentFilters.isBlurred != null && newCurrentFilters.isBlurred != product.isBlurred) {
+          if (newFilters.isBlurred != null && newFilters.isBlurred != product.isBlurred) {
             continue;
           }
 
-          if (newCurrentFilters.isFavorite != null && newCurrentFilters.isFavorite != product.isFavorite) {
+          if (newFilters.isFavorite != null && newFilters.isFavorite != product.isFavorite) {
             continue;
           }
 
-          if (newCurrentFilters.minRegularPrice != null &&
-              newCurrentFilters.minRegularPrice! > product.offer.regularPrice.amount) {
+          if (newFilters.minRegularPrice != null &&
+              newFilters.minRegularPrice! > product.offer.regularPrice.amount) {
             continue;
           }
 
-          if (newCurrentFilters.maxRegularPrice != null &&
-              newCurrentFilters.maxRegularPrice! < product.offer.regularPrice.amount) {
+          if (newFilters.maxRegularPrice != null &&
+              newFilters.maxRegularPrice! < product.offer.regularPrice.amount) {
             continue;
           }
 
@@ -184,7 +182,7 @@ class HomeCubit extends Cubit<HomeState> {
         }
       }
       emit(HomeLoadedState(
-        currentFilters: newCurrentFilters,
+        currentFilters: newFilters,
         initFilters: data.initFilters,
         products: newProducts,
       ));

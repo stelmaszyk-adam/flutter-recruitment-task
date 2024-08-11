@@ -26,7 +26,7 @@ class HomePage extends StatelessWidget {
                   currentFilters: state.currentFilters,
                 ),
               ),
-            ).then((value) => context.read<HomeCubit>().setNewCurrentFilters(value))
+            ).then((value) => context.read<HomeCubit>().setNewFilters(value))
           },
         _ => {},
       },
