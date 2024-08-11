@@ -15,10 +15,10 @@ class MockProductsRepository extends Mock implements ProductsRepository {}
 
 void main() {
   group('HomeCubit - ', () {
-    late ProductsRepository productsRepository;
-    late ProductsPage testProductsFirstPage;
-    late ProductsPage testProductsSecondPage;
-    late Exception exception;
+    late final ProductsRepository productsRepository;
+    late final ProductsPage testProductsFirstPage;
+    late final ProductsPage testProductsSecondPage;
+    late final Exception exception;
 
     late HomeCubit homeCubit;
 
@@ -35,6 +35,8 @@ void main() {
       testProductsSecondPage = ProductsPage.fromJson(json2);
 
       productsRepository = MockProductsRepository();
+
+      exception = Exception();
 
       [testProductsFirstPage.products, testProductsSecondPage.products].expand((list) => list).toList();
     });
@@ -63,7 +65,6 @@ void main() {
         verify(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1)));
         verifyNoMoreInteractions(productsRepository);
       },
-      tearDown: () => {},
       tags: [
         'logic',
       ],
@@ -72,7 +73,6 @@ void main() {
     blocTest<HomeCubit, HomeState>(
       'failure getNextPage',
       setUp: () {
-        exception = Exception();
         when(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1))).thenThrow(exception);
       },
       build: () => homeCubit,
@@ -84,7 +84,6 @@ void main() {
         verify(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1)));
         verifyNoMoreInteractions(productsRepository);
       },
-      tearDown: () => {},
       tags: [
         'logic',
       ],
@@ -120,7 +119,6 @@ void main() {
         verify(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1)));
         verifyNoMoreInteractions(productsRepository);
       },
-      tearDown: () => {},
       tags: [
         'logic',
       ],
@@ -129,7 +127,6 @@ void main() {
     blocTest<HomeCubit, HomeState>(
       'failure findItemById',
       setUp: () {
-        exception = Exception();
         when(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1))).thenAnswer(
           (_) => Future.value(
             testProductsFirstPage,
@@ -153,13 +150,13 @@ void main() {
         verify(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 2)));
         verifyNoMoreInteractions(productsRepository);
       },
-      tearDown: () => {},
       tags: [
         'logic',
       ],
     );
 
-    test(('success fetchAllDataForFilter and check that it is last page'), () async {
+    test(('success fetchAllDataForFilters, check that it is last page and try again run fetchAllDataForFilters'),
+        () async {
       const product = ProductsPage(
         pageNumber: 1,
         totalPages: 2,
@@ -227,12 +224,32 @@ void main() {
       );
 
       expect(homeCubit.isLastPage, true);
+
+      await homeCubit.fetchAllDataForFilters();
+
+      expect(
+        homeCubit.state,
+        HomeFiltersLoadedState(
+          currentFilters: null,
+          products: [product.products[0], product.products[0]],
+          initFilters: FiltersEntity(
+            tags: const {},
+            sellers: {
+              SellerEntity(
+                id: product.products[0].sellerId,
+                name: product.products[0].offer.sellerName,
+              )
+            },
+            maxRegularPrice: product.products[0].offer.regularPrice.amount,
+            minRegularPrice: product.products[0].offer.regularPrice.amount,
+          ),
+        ),
+      );
     });
 
     blocTest<HomeCubit, HomeState>(
       'failure fetchAllDataForFilters',
       setUp: () {
-        exception = Exception();
         when(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1))).thenAnswer(
           (_) => Future.value(
             testProductsFirstPage,
@@ -257,7 +274,6 @@ void main() {
         verify(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 2)));
         verifyNoMoreInteractions(productsRepository);
       },
-      tearDown: () => {},
       tags: [
         'logic',
       ],
@@ -270,7 +286,7 @@ void main() {
         isBlurred: false,
         isFavorite: true,
         maxRegularPrice: 100,
-        minRegularPrice: 20,
+        minRegularPrice: 0,
         sellers: {},
       );
 
@@ -303,6 +319,31 @@ void main() {
                 promotionalNormalizedPrice: null,
                 tags: [],
                 omnibusLabel: ''),
+          ),
+          Product(
+            available: true,
+            id: '',
+            name: '',
+            mainImage: '',
+            description: '',
+            isFavorite: true,
+            isBlurred: false,
+            sellerId: 'sellerId',
+            tags: [],
+            offer: Offer(
+                skuId: '',
+                sellerId: 'sellerId',
+                normalizedPrice: null,
+                subtitle: '',
+                omnibusPrice: null,
+                regularPrice: Price(amount: 10, currency: 'PLN'),
+                isBest: null,
+                isSponsored: null,
+                promotionalPrice: null,
+                sellerName: 'sellerName',
+                promotionalNormalizedPrice: null,
+                tags: [],
+                omnibusLabel: ''),
           )
         ],
       );
@@ -317,7 +358,7 @@ void main() {
 
       homeCubit.setNewFilters(filters);
 
-      expect(homeCubit.state, const HomeLoadedState(products: [], currentFilters: filters));
+      expect(homeCubit.state, HomeLoadedState(products: [product.products[1]], currentFilters: filters));
     });
   });
 }
