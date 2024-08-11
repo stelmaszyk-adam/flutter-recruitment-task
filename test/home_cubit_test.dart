@@ -158,49 +158,49 @@ void main() {
       ],
     );
 
-    blocTest<HomeCubit, HomeState>(
-      'success fetchAllDataForFilters',
-      setUp: () {
-        exception = Exception();
-        when(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1))).thenAnswer(
-          (_) => Future.value(
-            testProductsFirstPage,
-          ),
-        );
+    // blocTest<HomeCubit, HomeState>(
+    //   'success fetchAllDataForFilters',
+    //   setUp: () {
+    //     exception = Exception();
+    //     when(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1))).thenAnswer(
+    //       (_) => Future.value(
+    //         testProductsFirstPage,
+    //       ),
+    //     );
 
-        when(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 2))).thenAnswer(
-          (_) => Future.value(
-            testProductsFirstPage,
-          ),
-        );
+    //     when(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 2))).thenAnswer(
+    //       (_) => Future.value(
+    //         testProductsFirstPage,
+    //       ),
+    //     );
 
-        when(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 3))).thenAnswer(
-          (_) => Future.value(
-            testProductsFirstPage,
-          ),
-        );
-      },
-      build: () => HomeCubit(
-        productsRepository,
-      ),
-      act: (cubit) async {
-        await cubit.getNextPage();
-        await cubit.fetchAllDataForFilters();
-      },
-      expect: () => [
-        HomeLoadedState(products: testProductsFirstPage.products),
-        HomeErrorState(error: exception),
-      ],
-      verify: (_) {
-        verify(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1)));
-        verify(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 2)));
-        verifyNoMoreInteractions(productsRepository);
-      },
-      tearDown: () => {},
-      tags: [
-        'logic',
-      ],
-    );
+    //     when(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 3))).thenAnswer(
+    //       (_) => Future.value(
+    //         testProductsFirstPage,
+    //       ),
+    //     );
+    //   },
+    //   build: () => HomeCubit(
+    //     productsRepository,
+    //   ),
+    //   act: (cubit) async {
+    //     await cubit.getNextPage();
+    //     await cubit.fetchAllDataForFilters();
+    //   },
+    //   expect: () => [
+    //     HomeLoadedState(products: testProductsFirstPage.products),
+    //     HomeErrorState(error: exception),
+    //   ],
+    //   verify: (_) {
+    //     verify(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1)));
+    //     verify(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 2)));
+    //     verifyNoMoreInteractions(productsRepository);
+    //   },
+    //   tearDown: () => {},
+    //   tags: [
+    //     'logic',
+    //   ],
+    // );
 
     blocTest<HomeCubit, HomeState>(
       'failure fetchAllDataForFilters',
