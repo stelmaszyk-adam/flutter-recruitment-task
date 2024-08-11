@@ -8,11 +8,10 @@ import 'package:flutter_recruitment_task/presentation/widgets/big_text.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
 
 const _mainPadding = EdgeInsets.all(16.0);
+const _debounceDuration = Duration(milliseconds: 500);
 
 class HomeContentView extends StatefulWidget {
-  const HomeContentView({required this.state, super.key});
-
-  final HomeLoadedState state;
+  const HomeContentView({super.key});
 
   @override
   State<HomeContentView> createState() => _HomeContentViewState();
@@ -43,100 +42,26 @@ class _HomeContentViewState extends State<HomeContentView> {
                 onPressed: () => setState(() {
                   isSearch = !isSearch;
                 }),
-                icon: const Icon(Icons.search),
-              )
+                icon: const Icon(
+                  Icons.search,
+                ),
+              ),
+              IconButton(
+                onPressed: () => context.read<HomeCubit>().fetchAllDataForFilters(),
+                icon: const Icon(
+                  Icons.filter_alt_sharp,
+                ),
+              ),
             ],
           ),
       },
-      body: _Content(
-        state: widget.state,
-      ),
-    );
-  }
-}
-
-class _AppBar extends StatelessWidget {
-  const _AppBar({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Placeholder();
-  }
-}
-
-class _Content extends StatefulWidget {
-  const _Content({required this.state});
-
-  final HomeLoadedState state;
-
-  @override
-  State<_Content> createState() => __ContentState();
-}
-
-class __ContentState extends State<_Content> {
-  final scrollController = ScrollController();
-
-  late final SliverObserverController observerController = SliverObserverController(controller: scrollController);
-
-  BuildContext? _sliverListCtx;
-
-  @override
-  Widget build(BuildContext context) {
-    final products = widget.state.pages.map((page) => page.products).expand((product) => product).toList();
-
-    return Padding(
-      padding: _mainPadding,
-      child: SliverViewObserver(
-        controller: observerController,
-        child: CustomScrollView(
-          controller: scrollController,
-          slivers: [
-            BlocListener<HomeCubit, HomeState>(
-              listenWhen: (previous, current) => previous is HomeLoadedState && current is HomeFoundIdLoadedState,
-              listener: (context, state) {
-                if (state case HomeFoundIdLoadedState data) {
-                  observerController.animateTo(
-                    index: data.foundIndex,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                  );
-                }
-              },
-              child: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  childCount: products.length,
-                  (ctx, index) {
-                    _sliverListCtx ??= ctx;
-                    return Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _ProductCard(
-                          products[index],
-                        ),
-                        index == products.length - 1 ? const SizedBox() : const Divider()
-                      ],
-                    );
-                  },
-                ),
-              ),
-            ),
-            const _GetNextPageButton(),
-          ],
-        ),
-        sliverContexts: () {
-          return [
-            if (_sliverListCtx != null) _sliverListCtx!,
-          ];
-        },
-      ),
+      body: const _Content(),
     );
   }
 }
 
 class _Search extends StatelessWidget {
   _Search();
-
-  static const _debounceDuration = Duration(milliseconds: 1000);
 
   final Debouncer _debouncer = Debouncer();
 
@@ -149,6 +74,73 @@ class _Search extends StatelessWidget {
         onDebounce: () => context.read<HomeCubit>().findItemById(value),
       ),
     );
+  }
+}
+
+class _Content extends StatefulWidget {
+  const _Content();
+
+  @override
+  State<_Content> createState() => _ContentState();
+}
+
+class _ContentState extends State<_Content> {
+  final scrollController = ScrollController();
+
+  late final SliverObserverController observerController = SliverObserverController(controller: scrollController);
+
+  BuildContext? _sliverListCtx;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<HomeCubit, HomeState>(
+        listenWhen: (previous, current) => previous is HomeLoadedState && current is HomeFoundIdLoadedState,
+        listener: (context, state) {
+          if (state case HomeFoundIdLoadedState data) {
+            observerController.animateTo(
+              index: data.foundIndex,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+            );
+          }
+        },
+        builder: (context, state) => switch (state) {
+              HomeLoadedState() => Padding(
+                  padding: _mainPadding,
+                  child: SliverViewObserver(
+                    controller: observerController,
+                    child: CustomScrollView(
+                      controller: scrollController,
+                      slivers: [
+                        SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            childCount: state.products.length,
+                            (ctx, index) {
+                              _sliverListCtx ??= ctx;
+                              return Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  _ProductCard(
+                                    state.products[index],
+                                  ),
+                                  index == state.products.length - 1 ? const SizedBox() : const Divider()
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+                        const _GetNextPageButton(),
+                      ],
+                    ),
+                    sliverContexts: () {
+                      return [
+                        if (_sliverListCtx != null) _sliverListCtx!,
+                      ];
+                    },
+                  ),
+                ),
+              _ => const SizedBox.shrink()
+            });
   }
 }
 
@@ -217,10 +209,13 @@ class _GetNextPageButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverToBoxAdapter(
-      child: TextButton(
-        onPressed: context.read<HomeCubit>().getNextPage,
-        child: const BigText('Get next page'),
-      ),
+      child: switch (context.watch<HomeCubit>().isLastPage) {
+        true => const SizedBox(),
+        false => TextButton(
+            onPressed: context.read<HomeCubit>().getNextPage,
+            child: const BigText('Get next page'),
+          ),
+      },
     );
   }
 }

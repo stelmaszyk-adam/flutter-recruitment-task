@@ -10,7 +10,7 @@ class HomeLoadingView extends StatelessWidget {
       appBar: AppBar(
         title: const BigText('Products'),
       ),
-      body: const BigText('Loading...'),
+      body: const Center(child: BigText('Loading...')),
     );
   }
 }

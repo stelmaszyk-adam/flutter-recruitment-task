@@ -1,3 +1,5 @@
+import 'package:flutter_recruitment_task/presentation/extension/color_extension.dart';
+import 'package:flutter_recruitment_task/presentation/pages/home_page/cubit/filter_entity.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'products_page.g.dart';
@@ -11,8 +13,7 @@ class ProductsPage {
     required this.products,
   });
 
-  factory ProductsPage.fromJson(Map<String, dynamic> json) =>
-      _$ProductsPageFromJson(json);
+  factory ProductsPage.fromJson(Map<String, dynamic> json) => _$ProductsPageFromJson(json);
 
   final int pageNumber;
   final int pageSize;
@@ -35,8 +36,7 @@ class Product {
     required this.offer,
   });
 
-  factory Product.fromJson(Map<String, dynamic> json) =>
-      _$ProductFromJson(json);
+  factory Product.fromJson(Map<String, dynamic> json) => _$ProductFromJson(json);
 
   final String id;
   final String name;
@@ -100,6 +100,14 @@ class Tag {
   final String label;
   final String color;
   final String labelColor;
+
+  TagEntity toEntity() {
+    return TagEntity(
+      label: label,
+      labelColor: labelColor.toColor(),
+      tag: tag,
+    );
+  }
 }
 
 @JsonSerializable()
@@ -123,8 +131,7 @@ class NormalizedPrice {
     required this.unitLabel,
   });
 
-  factory NormalizedPrice.fromJson(Map<String, dynamic> json) =>
-      _$NormalizedPriceFromJson(json);
+  factory NormalizedPrice.fromJson(Map<String, dynamic> json) => _$NormalizedPriceFromJson(json);
 
   final double amount;
   final String currency;
