@@ -67,36 +67,6 @@ class _ContentState extends State<_Content> {
     super.initState();
   }
 
-  // @override
-  // void didUpdateWidget(covariant _Content oldWidget) {
-  //   final currentFilters = widget.currentFilters;
-  //   final oldCurrentFilters = oldWidget.currentFilters;
-  //   if (_tags != oldCurrentFilters?.tags) {
-  //     _tags = Set.from(currentFilters?.tags ?? {});
-  //   }
-
-  //   if (_tags != oldCurrentFilters?.tags) {
-  //     isAvailable = currentFilters?.isAvailable;
-  //   }
-  //   if (_tags != oldCurrentFilters?.tags) {
-  //     isFavorite = currentFilters?.isFavorite;
-  //   }
-  //   if (_tags != oldCurrentFilters?.tags) {
-  //     isBlurred = currentFilters?.isBlurred;
-  //   }
-  //   if (_tags != oldCurrentFilters?.tags) {
-  //     sellers = Set.from(currentFilters?.sellers ?? {});
-  //   }
-
-  //   regularPrice = RangeValues(
-  //     currentFilters?.minRegularPrice ?? widget.initFilters?.minRegularPrice ?? 0,
-  //     currentFilters?.maxRegularPrice ?? widget.initFilters?.maxRegularPrice ?? 0,
-  //   );
-
-  //   super.initState();
-  //   super.didUpdateWidget(oldWidget);
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Stack(
