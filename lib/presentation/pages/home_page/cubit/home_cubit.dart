@@ -2,7 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_recruitment_task/models/get_products_page.dart';
 import 'package:flutter_recruitment_task/models/products_page.dart';
-import 'package:flutter_recruitment_task/presentation/pages/home_page/cubit/filter_entity.dart';
+import 'package:flutter_recruitment_task/models/filter_entity.dart';
 import 'package:flutter_recruitment_task/repositories/products_repository.dart';
 
 part 'home_state.dart';
@@ -12,7 +12,7 @@ class HomeCubit extends Cubit<HomeState> {
 
   final ProductsRepository _productsRepository;
   final List<ProductsPage> _pages = [];
-  var _param = GetProductsPage(pageNumber: 1);
+  var _param = const GetProductsPage(pageNumber: 1);
 
   Future<void> getNextPage() async {
     try {
@@ -20,8 +20,7 @@ class HomeCubit extends Cubit<HomeState> {
       final newPage = await _productsRepository.getProductsPage(_param);
       _param = _param.increasePageNumber();
       _pages.add(newPage);
-      emit(HomeLoadedState(
-          products: List.from(_pages.map((pages) => pages.products).expand((product) => product).toList())));
+      emit(HomeLoadedState(products: _pages.map((pages) => pages.products).expand((product) => product).toList()));
     } catch (e) {
       emit(HomeErrorState(error: e));
     }
@@ -37,6 +36,7 @@ class HomeCubit extends Cubit<HomeState> {
             foundIndex: index,
             previousState: data,
           ));
+          return;
         }
         index++;
       }
@@ -50,9 +50,18 @@ class HomeCubit extends Cubit<HomeState> {
               foundIndex: index,
               previousState: data,
             ));
+            return;
           }
           index++;
         }
+      }
+
+      if (state is HomeFoundIdLoadedState) {
+        emit(HomeLoadedState(
+          currentFilters: data.currentFilters,
+          initFilters: data.initFilters,
+          products: data.products,
+        ));
       }
     }
   }
@@ -69,15 +78,21 @@ class HomeCubit extends Cubit<HomeState> {
 
       if (data.initFilters == null) {
         while (!isLastPage) {
-          final newPage = await _productsRepository.getProductsPage(_param);
-          _param = _param.increasePageNumber();
-          _pages.add(newPage);
+          try {
+            final newPage = await _productsRepository.getProductsPage(_param);
+            _param = _param.increasePageNumber();
+            _pages.add(newPage);
+          } catch (e) {
+            emit(HomeErrorState(error: e));
+            return;
+          }
         }
 
         Set<TagEntity> tags = {};
         Set<SellerEntity> sellers = {};
-        double minRegularPrice = -1;
-        double maxRegularPrice = -1;
+        const noValue = -1.0;
+        double minRegularPrice = noValue;
+        double maxRegularPrice = noValue;
 
         for (final pages in _pages) {
           for (final product in pages.products) {
@@ -85,19 +100,19 @@ class HomeCubit extends Cubit<HomeState> {
             sellers.add(SellerEntity(id: product.sellerId, name: product.offer.sellerName));
 
             if (product.offer.normalizedPrice?.amount != null &&
-                (minRegularPrice == -1 || minRegularPrice > product.offer.normalizedPrice!.amount)) {
+                (minRegularPrice == noValue || minRegularPrice > product.offer.normalizedPrice!.amount)) {
               minRegularPrice = product.offer.normalizedPrice!.amount;
             }
 
             if (product.offer.normalizedPrice?.amount != null &&
-                (maxRegularPrice == -1 || maxRegularPrice < product.offer.normalizedPrice!.amount)) {
+                (maxRegularPrice == noValue || maxRegularPrice < product.offer.normalizedPrice!.amount)) {
               maxRegularPrice = product.offer.normalizedPrice!.amount;
             }
           }
         }
         final products = _pages.map((pages) => pages.products).expand((product) => product).toList();
         emit(HomeFiltersLoadedState(
-          products: List.from(products),
+          products: products,
           initFilters: FiltersEntity(
             tags: tags,
             sellers: sellers,

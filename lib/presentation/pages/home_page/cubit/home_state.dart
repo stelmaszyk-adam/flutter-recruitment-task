@@ -69,7 +69,7 @@ class HomeFoundIdLoadedState extends HomeLoadedState {
 class HomeErrorState extends HomeState {
   const HomeErrorState({required this.error});
 
-  final dynamic error;
+  final Object? error;
 
   @override
   List<Object?> get props => [error];

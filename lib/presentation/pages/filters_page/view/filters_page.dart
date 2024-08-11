@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_recruitment_task/presentation/pages/home_page/cubit/filter_entity.dart';
+import 'package:flutter_recruitment_task/models/filter_entity.dart';
 
 const _mainPadding = EdgeInsets.all(16.0);
 const _verticalPadding = 8.0;
@@ -43,7 +43,7 @@ class _Content extends StatefulWidget {
 }
 
 class _ContentState extends State<_Content> {
-  late Set<TagEntity> tags;
+  late Set<TagEntity> _tags;
   bool? isAvailable;
   bool? isFavorite;
   bool? isBlurred;
@@ -53,7 +53,7 @@ class _ContentState extends State<_Content> {
   @override
   void initState() {
     final currentFilters = widget.currentFilters;
-    tags = Set.from(currentFilters?.tags ?? {});
+    _tags = Set.from(currentFilters?.tags ?? {});
     isAvailable = currentFilters?.isAvailable;
     isFavorite = currentFilters?.isFavorite;
     isBlurred = currentFilters?.isBlurred;
@@ -66,6 +66,36 @@ class _ContentState extends State<_Content> {
 
     super.initState();
   }
+
+  // @override
+  // void didUpdateWidget(covariant _Content oldWidget) {
+  //   final currentFilters = widget.currentFilters;
+  //   final oldCurrentFilters = oldWidget.currentFilters;
+  //   if (_tags != oldCurrentFilters?.tags) {
+  //     _tags = Set.from(currentFilters?.tags ?? {});
+  //   }
+
+  //   if (_tags != oldCurrentFilters?.tags) {
+  //     isAvailable = currentFilters?.isAvailable;
+  //   }
+  //   if (_tags != oldCurrentFilters?.tags) {
+  //     isFavorite = currentFilters?.isFavorite;
+  //   }
+  //   if (_tags != oldCurrentFilters?.tags) {
+  //     isBlurred = currentFilters?.isBlurred;
+  //   }
+  //   if (_tags != oldCurrentFilters?.tags) {
+  //     sellers = Set.from(currentFilters?.sellers ?? {});
+  //   }
+
+  //   regularPrice = RangeValues(
+  //     currentFilters?.minRegularPrice ?? widget.initFilters?.minRegularPrice ?? 0,
+  //     currentFilters?.maxRegularPrice ?? widget.initFilters?.maxRegularPrice ?? 0,
+  //   );
+
+  //   super.initState();
+  //   super.didUpdateWidget(oldWidget);
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -134,13 +164,13 @@ class _ContentState extends State<_Content> {
                   for (TagEntity tag in (widget.initFilters?.tags ?? {}))
                     OutlinedButton(
                       style: ButtonStyle(
-                        backgroundColor: WidgetStateProperty.all(tags.contains(tag) ? Colors.red : null),
+                        backgroundColor: WidgetStateProperty.all(_tags.contains(tag) ? Colors.red : null),
                       ),
                       onPressed: () {
-                        if (tags.contains(tag)) {
-                          tags.remove(tag);
+                        if (_tags.contains(tag)) {
+                          _tags.remove(tag);
                         } else {
-                          tags.add(tag);
+                          _tags.add(tag);
                         }
                         setState(() {});
                       },
@@ -184,7 +214,7 @@ class _ContentState extends State<_Content> {
   }
 
   void _reset() => setState(() {
-        tags = {};
+        _tags = {};
         isAvailable = null;
         isFavorite = null;
         isBlurred = null;
@@ -201,7 +231,7 @@ class _ContentState extends State<_Content> {
           isAvailable: isAvailable,
           isBlurred: isBlurred,
           isFavorite: isFavorite,
-          tags: tags,
+          tags: _tags,
           sellers: sellers,
           minRegularPrice: regularPrice.start,
           maxRegularPrice: regularPrice.end,

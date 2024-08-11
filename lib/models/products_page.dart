@@ -1,5 +1,5 @@
 import 'package:flutter_recruitment_task/presentation/extension/color_extension.dart';
-import 'package:flutter_recruitment_task/presentation/pages/home_page/cubit/filter_entity.dart';
+import 'package:flutter_recruitment_task/models/filter_entity.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'products_page.g.dart';
