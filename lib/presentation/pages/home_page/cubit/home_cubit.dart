@@ -2,7 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_recruitment_task/models/get_products_page.dart';
 import 'package:flutter_recruitment_task/models/products_page.dart';
-import 'package:flutter_recruitment_task/models/filter_entity.dart';
+import 'package:flutter_recruitment_task/models/entities/filter_entity.dart';
 import 'package:flutter_recruitment_task/repositories/products_repository.dart';
 
 part 'home_state.dart';
@@ -43,6 +43,10 @@ class HomeCubit extends Cubit<HomeState> {
 
       while (!isLastPage) {
         await getNextPage();
+
+        if (state is HomeErrorState) {
+          return;
+        }
 
         for (final Product product in _pages.last.products) {
           if (product.id == id) {

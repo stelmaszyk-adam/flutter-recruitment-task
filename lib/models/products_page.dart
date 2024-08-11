@@ -1,12 +1,13 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter_recruitment_task/presentation/extension/color_extension.dart';
-import 'package:flutter_recruitment_task/models/filter_entity.dart';
+import 'package:flutter_recruitment_task/models/entities/filter_entity.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'products_page.g.dart';
 
 @JsonSerializable()
-class ProductsPage {
-  ProductsPage({
+class ProductsPage extends Equatable {
+  const ProductsPage({
     required this.totalPages,
     required this.pageNumber,
     required this.pageSize,
@@ -19,11 +20,19 @@ class ProductsPage {
   final int pageSize;
   final int totalPages;
   final List<Product> products;
+
+  @override
+  List<Object?> get props => [
+        pageNumber,
+        pageSize,
+        totalPages,
+        products,
+      ];
 }
 
 @JsonSerializable()
-class Product {
-  Product({
+class Product extends Equatable {
+  const Product({
     required this.id,
     required this.name,
     required this.mainImage,
@@ -48,11 +57,25 @@ class Product {
   final String sellerId;
   final List<Tag> tags;
   final Offer offer;
+
+  @override
+  List<Object?> get props => [
+        id,
+        name,
+        mainImage,
+        description,
+        available,
+        isFavorite,
+        isBlurred,
+        sellerId,
+        tags,
+        offer,
+      ];
 }
 
 @JsonSerializable()
-class Offer {
-  Offer({
+class Offer extends Equatable {
+  const Offer({
     required this.skuId,
     required this.sellerId,
     required this.sellerName,
@@ -83,11 +106,28 @@ class Offer {
   final Price? omnibusPrice;
   final String? omnibusLabel;
   final List<Tag>? tags;
+
+  @override
+  List<Object?> get props => [
+        skuId,
+        sellerId,
+        sellerName,
+        subtitle,
+        isSponsored,
+        isBest,
+        regularPrice,
+        promotionalPrice,
+        normalizedPrice,
+        promotionalNormalizedPrice,
+        omnibusPrice,
+        omnibusLabel,
+        tags,
+      ];
 }
 
 @JsonSerializable()
-class Tag {
-  Tag({
+class Tag extends Equatable {
+  const Tag({
     required this.tag,
     required this.label,
     required this.color,
@@ -108,11 +148,19 @@ class Tag {
       tag: tag,
     );
   }
+
+  @override
+  List<Object?> get props => [
+        tag,
+        label,
+        color,
+        labelColor,
+      ];
 }
 
 @JsonSerializable()
-class Price {
-  Price({
+class Price extends Equatable {
+  const Price({
     required this.amount,
     required this.currency,
   });
@@ -121,11 +169,17 @@ class Price {
 
   final double amount;
   final String currency;
+
+  @override
+  List<Object?> get props => [
+        amount,
+        currency,
+      ];
 }
 
 @JsonSerializable()
-class NormalizedPrice {
-  NormalizedPrice({
+class NormalizedPrice extends Equatable {
+  const NormalizedPrice({
     required this.amount,
     required this.currency,
     required this.unitLabel,
@@ -136,4 +190,11 @@ class NormalizedPrice {
   final double amount;
   final String currency;
   final String? unitLabel;
+
+  @override
+  List<Object?> get props => [
+        amount,
+        currency,
+        unitLabel,
+      ];
 }

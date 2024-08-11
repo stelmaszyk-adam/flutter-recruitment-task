@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_recruitment_task/models/filter_entity.dart';
+import 'package:flutter_recruitment_task/models/entities/filter_entity.dart';
 
 const _mainPadding = EdgeInsets.all(16.0);
 const _verticalPadding = 8.0;

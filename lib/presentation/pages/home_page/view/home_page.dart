@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_recruitment_task/presentation/pages/filters_page/view/filters_page.dart';
-import 'package:flutter_recruitment_task/models/filter_entity.dart';
+import 'package:flutter_recruitment_task/models/entities/filter_entity.dart';
 import 'package:flutter_recruitment_task/presentation/pages/home_page/cubit/home_cubit.dart';
 import 'package:flutter_recruitment_task/presentation/pages/home_page/view/home_content_view.dart';
 import 'package:flutter_recruitment_task/presentation/pages/home_page/view/home_error_view.dart';

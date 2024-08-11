@@ -32,6 +32,8 @@ void main() {
       testProductsSecondPage = ProductsPage.fromJson(json2);
 
       productsRepository = MockProductsRepository();
+
+      [testProductsFirstPage.products, testProductsSecondPage.products].expand((list) => list).toList();
     });
 
     blocTest<HomeCubit, HomeState>(
@@ -84,16 +86,11 @@ void main() {
     );
 
     blocTest<HomeCubit, HomeState>(
-      'successfully findItemById with id which belongs to one of the pages',
+      'successfully findItemById with id which belongs to first of the page',
       setUp: () {
         when(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1))).thenAnswer(
           (_) => Future.value(
             testProductsFirstPage,
-          ),
-        );
-        when(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 2))).thenAnswer(
-          (_) => Future.value(
-            testProductsSecondPage,
           ),
         );
       },
@@ -102,22 +99,53 @@ void main() {
       ),
       act: (cubit) async {
         await cubit.getNextPage();
-        await cubit.findItemById(testProductsSecondPage.products.first.id);
+        await cubit.findItemById(testProductsFirstPage.products.first.id);
       },
       expect: () => [
         HomeLoadedState(products: testProductsFirstPage.products),
-        HomeLoadedState(
-            products:
-                [testProductsFirstPage.products, testProductsSecondPage.products].expand((list) => list).toList()),
         HomeFoundIdLoadedState(
           previousState: HomeLoadedState(
-            products: [testProductsFirstPage.products, testProductsSecondPage.products].expand((list) => list).toList(),
+            products: testProductsFirstPage.products,
           ),
-          foundIndex: [testProductsFirstPage.products, testProductsSecondPage.products]
+          foundIndex: [testProductsFirstPage.products]
               .expand((list) => list)
               .toList()
-              .indexOf(testProductsSecondPage.products.first),
+              .indexOf(testProductsFirstPage.products.first),
         ),
+      ],
+      verify: (_) {
+        verify(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1)));
+        verifyNoMoreInteractions(productsRepository);
+      },
+      tearDown: () => {},
+      tags: [
+        'logic',
+      ],
+    );
+
+    blocTest<HomeCubit, HomeState>(
+      'failure findItemById',
+      setUp: () {
+        exception = Exception();
+        when(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1))).thenAnswer(
+          (_) => Future.value(
+            testProductsFirstPage,
+          ),
+        );
+        when(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 2))).thenThrow(
+          exception,
+        );
+      },
+      build: () => HomeCubit(
+        productsRepository,
+      ),
+      act: (cubit) async {
+        await cubit.getNextPage();
+        await cubit.findItemById(testProductsSecondPage.products.last.id);
+      },
+      expect: () => [
+        HomeLoadedState(products: testProductsFirstPage.products),
+        HomeErrorState(error: exception),
       ],
       verify: (_) {
         verify(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1)));
@@ -131,20 +159,77 @@ void main() {
     );
 
     blocTest<HomeCubit, HomeState>(
-      'failure findItemById',
+      'success fetchAllDataForFilters',
       setUp: () {
         exception = Exception();
-        when(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1))).thenThrow(exception);
+        when(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1))).thenAnswer(
+          (_) => Future.value(
+            testProductsFirstPage,
+          ),
+        );
+
+        when(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 2))).thenAnswer(
+          (_) => Future.value(
+            testProductsFirstPage,
+          ),
+        );
+
+        when(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 3))).thenAnswer(
+          (_) => Future.value(
+            testProductsFirstPage,
+          ),
+        );
       },
       build: () => HomeCubit(
         productsRepository,
       ),
-      act: (cubit) => cubit.getNextPage(),
+      act: (cubit) async {
+        await cubit.getNextPage();
+        await cubit.fetchAllDataForFilters();
+      },
       expect: () => [
+        HomeLoadedState(products: testProductsFirstPage.products),
         HomeErrorState(error: exception),
       ],
       verify: (_) {
         verify(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1)));
+        verify(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 2)));
+        verifyNoMoreInteractions(productsRepository);
+      },
+      tearDown: () => {},
+      tags: [
+        'logic',
+      ],
+    );
+
+    blocTest<HomeCubit, HomeState>(
+      'failure fetchAllDataForFilters',
+      setUp: () {
+        exception = Exception();
+        when(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1))).thenAnswer(
+          (_) => Future.value(
+            testProductsFirstPage,
+          ),
+        );
+        when(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 2))).thenThrow(
+          exception,
+        );
+      },
+      build: () => HomeCubit(
+        productsRepository,
+      ),
+      act: (cubit) async {
+        await cubit.getNextPage();
+        await cubit.fetchAllDataForFilters();
+      },
+      expect: () => [
+        HomeLoadedState(products: testProductsFirstPage.products),
+        HomeFiltersLoadingState(HomeLoadedState(products: testProductsFirstPage.products)),
+        HomeErrorState(error: exception),
+      ],
+      verify: (_) {
+        verify(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1)));
+        verify(() => productsRepository.getProductsPage(const GetProductsPage(pageNumber: 2)));
         verifyNoMoreInteractions(productsRepository);
       },
       tearDown: () => {},
