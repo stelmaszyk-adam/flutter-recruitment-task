@@ -4,7 +4,6 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_recruitment_task/models/entities/filter_entity.dart';
-import 'package:flutter_recruitment_task/models/get_products_page.dart';
 import 'package:flutter_recruitment_task/models/products_page.dart';
 import 'package:flutter_recruitment_task/presentation/pages/home_page/bloc/home_bloc.dart';
 import 'package:flutter_recruitment_task/repositories/products_repository.dart';
@@ -23,7 +22,7 @@ void main() {
     blocTest<HomeBloc, HomeState>(
       'success GetNextPageHomeEvent',
       setUp: () {
-        when(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1))).thenAnswer(
+        when(() => params.productsRepository.getProductsPage(1)).thenAnswer(
           (_) => Future.value(
             params.testProductsFirstPage,
           ),
@@ -32,10 +31,14 @@ void main() {
       build: () => params.homeBloc,
       act: (bloc) => bloc.add(const GetNextPageHomeEvent()),
       expect: () => [
-        HomeLoadedState(products: params.testProductsFirstPage.products),
+        HomeLoadedState(
+          products: params.testProductsFirstPage.products,
+          pageIndex: 2,
+          pages: [params.testProductsFirstPage],
+        ),
       ],
       verify: (_) {
-        verify(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1)));
+        verify(() => params.productsRepository.getProductsPage(1));
         verifyNoMoreInteractions(params.productsRepository);
       },
       tags: [
@@ -46,8 +49,7 @@ void main() {
     blocTest<HomeBloc, HomeState>(
       'failure GetNextPageHomeEvent',
       setUp: () {
-        when(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1)))
-            .thenThrow(params.exception);
+        when(() => params.productsRepository.getProductsPage(1)).thenThrow(params.exception);
       },
       build: () => params.homeBloc,
       act: (bloc) => bloc.add(const GetNextPageHomeEvent()),
@@ -55,7 +57,7 @@ void main() {
         HomeErrorState(error: params.exception),
       ],
       verify: (_) {
-        verify(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1)));
+        verify(() => params.productsRepository.getProductsPage(1));
         verifyNoMoreInteractions(params.productsRepository);
       },
       tags: [
@@ -66,7 +68,7 @@ void main() {
     blocTest<HomeBloc, HomeState>(
       'success HomeFoundIdLoadedState - product id belongs to first page of the items',
       setUp: () {
-        when(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1))).thenAnswer(
+        when(() => params.productsRepository.getProductsPage(1)).thenAnswer(
           (_) => Future.value(
             params.testProductsFirstPage,
           ),
@@ -79,9 +81,15 @@ void main() {
           ..add(FindItemByIdHomeEvent(id: params.testProductsFirstPage.products.first.id));
       },
       expect: () => [
-        HomeLoadedState(products: params.testProductsFirstPage.products),
+        HomeLoadedState(
+          products: params.testProductsFirstPage.products,
+          pages: [params.testProductsFirstPage],
+          pageIndex: 2,
+        ),
         HomeFoundIdLoadedState(
           previousState: HomeLoadedState(
+            pages: [params.testProductsFirstPage],
+            pageIndex: 2,
             products: params.testProductsFirstPage.products,
           ),
           foundIndex: [params.testProductsFirstPage.products]
@@ -91,7 +99,7 @@ void main() {
         ),
       ],
       verify: (_) {
-        verify(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1)));
+        verify(() => params.productsRepository.getProductsPage(1));
         verifyNoMoreInteractions(params.productsRepository);
       },
       tags: [
@@ -102,13 +110,13 @@ void main() {
     blocTest<HomeBloc, HomeState>(
       'success HomeFoundIdLoadedState - product id belongs to second page of the items',
       setUp: () {
-        when(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1))).thenAnswer(
+        when(() => params.productsRepository.getProductsPage(1)).thenAnswer(
           (_) => Future.value(
             params.testProductsFirstPage,
           ),
         );
 
-        when(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 2))).thenAnswer(
+        when(() => params.productsRepository.getProductsPage(2)).thenAnswer(
           (_) => Future.value(
             params.testProductsSecondPage,
           ),
@@ -126,8 +134,8 @@ void main() {
         isA<HomeFoundIdLoadedState>(),
       ],
       verify: (_) {
-        verify(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1)));
-        verify(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 2)));
+        verify(() => params.productsRepository.getProductsPage(1));
+        verify(() => params.productsRepository.getProductsPage(2));
         verifyNoMoreInteractions(params.productsRepository);
       },
       tags: [
@@ -171,7 +179,7 @@ void main() {
           ],
         );
 
-        when(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1))).thenAnswer(
+        when(() => params.productsRepository.getProductsPage(1)).thenAnswer(
           (_) => Future.value(
             product,
           ),
@@ -190,7 +198,7 @@ void main() {
         isA<HomeLoadedState>(),
       ],
       verify: (_) {
-        verify(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1)));
+        verify(() => params.productsRepository.getProductsPage(1));
         verifyNoMoreInteractions(params.productsRepository);
       },
       tags: [
@@ -234,13 +242,13 @@ void main() {
           ],
         );
 
-        when(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1))).thenAnswer(
+        when(() => params.productsRepository.getProductsPage(1)).thenAnswer(
           (_) => Future.value(
             product,
           ),
         );
 
-        when(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 2))).thenAnswer(
+        when(() => params.productsRepository.getProductsPage(2)).thenAnswer(
           (_) => Future.value(
             product,
           ),
@@ -259,8 +267,8 @@ void main() {
         isA<HomeLoadedState>(),
       ],
       verify: (_) {
-        verify(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1)));
-        verify(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 2)));
+        verify(() => params.productsRepository.getProductsPage(1));
+        verify(() => params.productsRepository.getProductsPage(2));
         verifyNoMoreInteractions(params.productsRepository);
       },
       tags: [
@@ -271,12 +279,12 @@ void main() {
     blocTest<HomeBloc, HomeState>(
       'failure FindItemByIdHomeEvent',
       setUp: () {
-        when(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1))).thenAnswer(
+        when(() => params.productsRepository.getProductsPage(1)).thenAnswer(
           (_) => Future.value(
             params.testProductsFirstPage,
           ),
         );
-        when(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 2))).thenThrow(
+        when(() => params.productsRepository.getProductsPage(2)).thenThrow(
           params.exception,
         );
       },
@@ -287,12 +295,16 @@ void main() {
           ..add(FindItemByIdHomeEvent(id: params.testProductsSecondPage.products.first.id));
       },
       expect: () => [
-        HomeLoadedState(products: params.testProductsFirstPage.products),
+        HomeLoadedState(
+          products: params.testProductsFirstPage.products,
+          pages: [params.testProductsFirstPage],
+          pageIndex: 2,
+        ),
         HomeErrorState(error: params.exception),
       ],
       verify: (_) {
-        verify(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1)));
-        verify(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 2)));
+        verify(() => params.productsRepository.getProductsPage(1));
+        verify(() => params.productsRepository.getProductsPage(2));
         verifyNoMoreInteractions(params.productsRepository);
       },
       tags: [
@@ -303,11 +315,11 @@ void main() {
     blocTest<HomeBloc, HomeState>(
       'success FetchAllDataForFiltersHomeEvent, run one time FetchAllDataForFiltersHomeEvent and try again run FetchAllDataForFiltersHomeEvent',
       setUp: () {
-        when(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1))).thenAnswer(
+        when(() => params.productsRepository.getProductsPage(1)).thenAnswer(
           (_) => Future.value(params.filtersProductPage),
         );
 
-        when(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 2))).thenAnswer(
+        when(() => params.productsRepository.getProductsPage(2)).thenAnswer(
           (_) => Future.value(params.filtersProductPage),
         );
       },
@@ -319,10 +331,20 @@ void main() {
           ..add(const FetchAllDataForFiltersHomeEvent());
       },
       expect: () => [
-        HomeLoadedState(products: params.filtersProductPage.products),
-        HomeFiltersLoadingState(HomeLoadedState(products: params.filtersProductPage.products)),
+        HomeLoadedState(
+          products: params.filtersProductPage.products,
+          pages: [params.filtersProductPage],
+          pageIndex: 2,
+        ),
+        HomeFiltersLoadingState(HomeLoadedState(
+          products: params.filtersProductPage.products,
+          pages: [params.filtersProductPage],
+          pageIndex: 2,
+        )),
         HomeFiltersLoadedState(
           currentFilters: null,
+          pages: [params.filtersProductPage, params.filtersProductPage],
+          pageIndex: 3,
           products: [params.filtersProductPage.products[0], params.filtersProductPage.products[0]],
           initFilters: FiltersEntity(
             tags: const {},
@@ -340,8 +362,8 @@ void main() {
         isA<HomeFiltersLoadedState>(),
       ],
       verify: (_) {
-        verify(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1)));
-        verify(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 2)));
+        verify(() => params.productsRepository.getProductsPage(1));
+        verify(() => params.productsRepository.getProductsPage(2));
         verifyNoMoreInteractions(params.productsRepository);
       },
       tags: [
@@ -352,12 +374,12 @@ void main() {
     blocTest<HomeBloc, HomeState>(
       'failure FetchAllDataForFiltersHomeEvent',
       setUp: () {
-        when(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1))).thenAnswer(
+        when(() => params.productsRepository.getProductsPage(1)).thenAnswer(
           (_) => Future.value(
             params.testProductsFirstPage,
           ),
         );
-        when(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 2))).thenThrow(
+        when(() => params.productsRepository.getProductsPage(2)).thenThrow(
           params.exception,
         );
       },
@@ -368,13 +390,23 @@ void main() {
           ..add(const FetchAllDataForFiltersHomeEvent());
       },
       expect: () => [
-        HomeLoadedState(products: params.testProductsFirstPage.products),
-        HomeFiltersLoadingState(HomeLoadedState(products: params.testProductsFirstPage.products)),
+        HomeLoadedState(
+          products: params.testProductsFirstPage.products,
+          pages: [params.testProductsFirstPage],
+          pageIndex: 2,
+        ),
+        HomeFiltersLoadingState(
+          HomeLoadedState(
+            products: params.testProductsFirstPage.products,
+            pages: [params.testProductsFirstPage],
+            pageIndex: 2,
+          ),
+        ),
         HomeErrorState(error: params.exception),
       ],
       verify: (_) {
-        verify(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1)));
-        verify(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 2)));
+        verify(() => params.productsRepository.getProductsPage(1));
+        verify(() => params.productsRepository.getProductsPage(2));
         verifyNoMoreInteractions(params.productsRepository);
       },
       tags: [
@@ -443,7 +475,7 @@ void main() {
           ],
         );
 
-        when(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1))).thenAnswer(
+        when(() => params.productsRepository.getProductsPage(1)).thenAnswer(
           (_) => Future.value(product),
         );
       },
@@ -460,7 +492,7 @@ void main() {
             .having((e) => e.currentFilters, 'check that newFilters was set correctly', params.newFilters),
       ],
       verify: (_) {
-        verify(() => params.productsRepository.getProductsPage(const GetProductsPage(pageNumber: 1)));
+        verify(() => params.productsRepository.getProductsPage(1));
         verifyNoMoreInteractions(params.productsRepository);
       },
       tags: [
