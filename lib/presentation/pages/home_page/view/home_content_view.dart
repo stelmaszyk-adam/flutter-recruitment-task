@@ -8,7 +8,7 @@ import 'package:flutter_recruitment_task/presentation/widgets/big_text.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
 
 const _mainPadding = EdgeInsets.all(16.0);
-const _debounceDuration = Duration(milliseconds: 500);
+const _debounceDuration = Duration(milliseconds: 1000);
 
 class HomeContentView extends StatefulWidget {
   const HomeContentView({super.key});
