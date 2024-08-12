@@ -30,7 +30,7 @@ To jakie filtry dodasz zależy od Ciebie.
 
 Niech UI będzie prosty, to nie jest celem tego zadania.
 
-Przefiltrowane produkty powinny zostać wyemitowne przez HomeCubit.
+Przefiltrowane produkty powinny zostać wyemitowne przez HomeBloc.
 
 Przykładowe filtry:
  - Filtr tagów
@@ -38,7 +38,7 @@ Przykładowe filtry:
  - Filtry zakresu cen
 
 ### Zadanie 4
-Stwórz unit testy dla HomeCubit.
+Stwórz unit testy dla HomeBloc.
   
 
 ## Running project

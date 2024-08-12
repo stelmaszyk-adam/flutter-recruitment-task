@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_recruitment_task/presentation/pages/home_page/cubit/home_cubit.dart';
+import 'package:flutter_recruitment_task/presentation/pages/home_page/bloc/home_bloc.dart';
 import 'package:flutter_recruitment_task/presentation/widgets/big_text.dart';
 
 class HomeErrorView extends StatelessWidget {

@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_recruitment_task/models/get_products_page.dart';
 import 'package:flutter_recruitment_task/models/products_page.dart';
@@ -6,15 +7,33 @@ import 'package:flutter_recruitment_task/models/entities/filter_entity.dart';
 import 'package:flutter_recruitment_task/repositories/products_repository.dart';
 
 part 'home_state.dart';
+part 'home_event.dart';
 
-class HomeCubit extends Cubit<HomeState> {
-  HomeCubit(this._productsRepository) : super(const HomeLoadingState());
+class HomeBloc extends Bloc<HomeEvent, HomeState> {
+  HomeBloc(this._productsRepository) : super(const HomeLoadingState()) {
+    on<GetNextPageHomeEvent>(
+      _getNextPage,
+      transformer: restartable(),
+    );
+    on<FindItemByIdHomeEvent>(_findItemById);
+    on<FetchAllDataForFiltersHomeEvent>(_fetchAllDataForFilters);
+    on<SetNewFiltersHomeEvent>(_setNewFilters);
+  }
 
   final ProductsRepository _productsRepository;
   final List<ProductsPage> _pages = [];
   var _param = const GetProductsPage(pageNumber: 1);
 
-  Future<void> getNextPage() async {
+  Future<void> _getNextPage(
+    GetNextPageHomeEvent event,
+    Emitter<HomeState> emit,
+  ) async {
+    await _getSubNextPage(emit);
+  }
+
+  Future<void> _getSubNextPage(
+    Emitter<HomeState> emit,
+  ) async {
     try {
       if (isLastPage) return;
       final newPage = await _productsRepository.getProductsPage(_param);
@@ -26,15 +45,18 @@ class HomeCubit extends Cubit<HomeState> {
     }
   }
 
-  Future<void> findItemById(String id) async {
-    if (id.isEmpty) {
+  Future<void> _findItemById(
+    FindItemByIdHomeEvent event,
+    Emitter<HomeState> emit,
+  ) async {
+    if (event.id.isEmpty) {
       return;
     }
     if (state case HomeLoadedState data) {
       int index = 0;
 
       for (final Product product in data.products) {
-        if (product.id == id) {
+        if (product.id == event.id) {
           emit(HomeFoundIdLoadedState(
             foundIndex: index,
             previousState: data,
@@ -45,13 +67,13 @@ class HomeCubit extends Cubit<HomeState> {
       }
 
       while (!isLastPage) {
-        await getNextPage();
+        await _getSubNextPage(emit);
 
         if (state is HomeErrorState) {
           return;
         } else if (state case HomeLoadedState data) {
           for (final Product product in _pages.last.products) {
-            if (product.id == id) {
+            if (product.id == event.id) {
               emit(HomeFoundIdLoadedState(
                 foundIndex: index,
                 previousState: data,
@@ -79,7 +101,10 @@ class HomeCubit extends Cubit<HomeState> {
     return totalPages != null && _param.pageNumber > totalPages;
   }
 
-  Future<void> fetchAllDataForFilters() async {
+  Future<void> _fetchAllDataForFilters(
+    FetchAllDataForFiltersHomeEvent event,
+    Emitter<HomeState> emit,
+  ) async {
     if (state case HomeLoadedState data) {
       emit(HomeFiltersLoadingState(data));
 
@@ -136,7 +161,11 @@ class HomeCubit extends Cubit<HomeState> {
     }
   }
 
-  void setNewFilters(FiltersEntity? newFilters) {
+  void _setNewFilters(
+    SetNewFiltersHomeEvent event,
+    Emitter<HomeState> emit,
+  ) {
+    final newFilters = event.newFilters;
     if (newFilters == null) {
       return;
     }

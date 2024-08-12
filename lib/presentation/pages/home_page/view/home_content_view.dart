@@ -3,12 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_debouncer/flutter_debouncer.dart';
 import 'package:flutter_recruitment_task/models/products_page.dart';
 import 'package:flutter_recruitment_task/presentation/extension/color_extension.dart';
-import 'package:flutter_recruitment_task/presentation/pages/home_page/cubit/home_cubit.dart';
+import 'package:flutter_recruitment_task/presentation/pages/home_page/bloc/home_bloc.dart';
 import 'package:flutter_recruitment_task/presentation/widgets/big_text.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
 
 const _mainPadding = EdgeInsets.all(16.0);
-const _debounceDuration = Duration(milliseconds: 1000);
+const _debounceDuration = Duration(milliseconds: 500);
 
 class HomeContentView extends StatefulWidget {
   const HomeContentView({super.key});
@@ -47,7 +47,7 @@ class _HomeContentViewState extends State<HomeContentView> {
                 ),
               ),
               IconButton(
-                onPressed: () => context.read<HomeCubit>().fetchAllDataForFilters(),
+                onPressed: () => context.read<HomeBloc>().add(const FetchAllDataForFiltersHomeEvent()),
                 icon: const Icon(
                   Icons.filter_alt_sharp,
                 ),
@@ -72,7 +72,7 @@ class _Search extends StatelessWidget {
       decoration: const InputDecoration(prefixIcon: Icon(Icons.search)),
       onChanged: (value) => _debouncer.debounce(
         duration: _debounceDuration,
-        onDebounce: () => context.read<HomeCubit>().findItemById(value),
+        onDebounce: () => context.read<HomeBloc>().add(FindItemByIdHomeEvent(id: value)),
       ),
     );
   }
@@ -94,7 +94,7 @@ class _ContentState extends State<_Content> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<HomeCubit, HomeState>(
+    return BlocConsumer<HomeBloc, HomeState>(
         listenWhen: (previous, current) => previous is HomeLoadedState && current is HomeFoundIdLoadedState,
         listener: (context, state) {
           if (state case HomeFoundIdLoadedState data) {
@@ -210,10 +210,10 @@ class _GetNextPageButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverToBoxAdapter(
-      child: switch (context.watch<HomeCubit>().isLastPage) {
+      child: switch (context.watch<HomeBloc>().isLastPage) {
         true => const SizedBox(),
         false => TextButton(
-            onPressed: context.read<HomeCubit>().getNextPage,
+            onPressed: () => context.read<HomeBloc>().add(const GetNextPageHomeEvent()),
             child: const BigText('Get next page'),
           ),
       },
